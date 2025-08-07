@@ -13,15 +13,15 @@ app.use(express.json());
 
 // Initialize Google Analytics client
 const analyticsDataClient = new BetaAnalyticsDataClient({
-  keyFilename: process.env.GOOGLE_APPLICATION_CREDENTIALS,
-  // Alternatively, switch to inline env var credentials for more secure Render deployment:
+  keyFilename: process.env.GOOGLE_APPLICATION_CREDENTIALS, // Path to your service account key file
+  // Or you can use inline credentials:
   // credentials: {
   //   client_email: process.env.GOOGLE_CLIENT_EMAIL,
   //   private_key: process.env.GOOGLE_PRIVATE_KEY.replace(/\\n/g, '\n'),
   // },
 });
 
-const GA_PROPERTY_ID = process.env.GA_PROPERTY_ID || 'YOUR_GA_PROPERTY_ID_HERE';
+const GA_PROPERTY_ID = process.env.GA_PROPERTY_ID; // Your GA4 Property ID
 
 // Helper function to run GA4 reports
 async function runReport(dimensions, metrics, dateRanges = [{ startDate: '30daysAgo', endDate: 'today' }]) {
@@ -32,20 +32,22 @@ async function runReport(dimensions, metrics, dateRanges = [{ startDate: '30days
       dimensions,
       metrics,
       orderBys: [{ metric: { metricName: metrics[0].name }, desc: true }],
-      limit: 10,
+      limit: 10, // Limit results to top 10
     });
+    
     return response;
   } catch (error) {
-    console.error('Error running GA4 report:', error.message);
+    console.error('Error running GA4 report:', error);
     throw error;
   }
 }
 
-// ✅ API Routes
+// API endpoint to get all analytics data
 app.get('/api/analytics-data', async (req, res) => {
   try {
-    console.log('📊 Fetching analytics data...');
+    console.log('Fetching analytics data...');
 
+    // 1. Get city data (users, sessions, bounce rate, page views by city)
     const cityReport = await runReport(
       [{ name: 'city' }],
       [
@@ -56,21 +58,25 @@ app.get('/api/analytics-data', async (req, res) => {
       ]
     );
 
+    // 2. Get traffic source data
     const trafficSourceReport = await runReport(
       [{ name: 'sessionDefaultChannelGroup' }],
       [{ name: 'sessions' }]
     );
 
+    // 3. Get platform data
     const platformReport = await runReport(
       [{ name: 'deviceCategory' }],
       [{ name: 'sessions' }]
     );
 
+    // 4. Get location data (country/region)
     const locationReport = await runReport(
       [{ name: 'country' }],
       [{ name: 'screenPageViews' }]
     );
 
+    // Process city data
     const cityData = cityReport.rows?.map(row => ({
       city: row.dimensionValues[0].value || 'Unknown',
       users: parseInt(row.metricValues[0].value) || 0,
@@ -79,16 +85,19 @@ app.get('/api/analytics-data', async (req, res) => {
       pageviews: parseInt(row.metricValues[3].value) || 0
     })) || [];
 
+    // Process traffic source data
     const trafficSources = trafficSourceReport.rows?.map(row => ({
       source: row.dimensionValues[0].value || 'Unknown',
       sessions: parseInt(row.metricValues[0].value) || 0
     })) || [];
 
+    // Process platform data
     const platforms = platformReport.rows?.map(row => ({
       platform: row.dimensionValues[0].value || 'Unknown',
       sessions: parseInt(row.metricValues[0].value) || 0
     })) || [];
 
+    // Process location data
     const locationData = locationReport.rows?.map(row => ({
       location: row.dimensionValues[0].value || 'Unknown',
       pageviews: parseInt(row.metricValues[0].value) || 0
@@ -102,22 +111,24 @@ app.get('/api/analytics-data', async (req, res) => {
       lastUpdated: new Date().toISOString()
     };
 
-    console.log('✅ Analytics data fetched successfully');
+    console.log('Analytics data fetched successfully');
     res.json(responseData);
 
   } catch (error) {
-    console.error('❌ Error fetching analytics data:', error);
-    res.status(500).json({
-      error: 'Failed to fetch analytics data',
-      message: error.message
+    console.error('Error fetching analytics data:', error);
+    res.status(500).json({ 
+      error: 'Failed to fetch analytics data', 
+      message: error.message 
     });
   }
 });
 
+// Health check endpoint
 app.get('/api/health', (req, res) => {
   res.json({ status: 'OK', timestamp: new Date().toISOString() });
 });
 
+// Test endpoint with sample data
 app.get('/api/test-data', (req, res) => {
   const sampleData = {
     cityData: [
@@ -148,17 +159,12 @@ app.get('/api/test-data', (req, res) => {
     ],
     lastUpdated: new Date().toISOString()
   };
-
+  
   res.json(sampleData);
 });
 
-// Optional: Root route
-app.get('/', (req, res) => {
-  res.send('📡 Barocci Analytics API is up and running.');
-});
-
 app.listen(PORT, () => {
-  console.log(`🚀 Server running at http://localhost:${PORT}`);
-  console.log(`🌍 GA Property ID: ${GA_PROPERTY_ID}`);
-  console.log(`🔐 Using credentials from: ${process.env.GOOGLE_APPLICATION_CREDENTIALS}`);
+  console.log(`Server running on http://localhost:${PORT}`);
+  console.log(`GA Property ID: ${GA_PROPERTY_ID}`);
+  console.log(`Credentials file: ${process.env.GOOGLE_APPLICATION_CREDENTIALS}`);
 });
