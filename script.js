@@ -1,5 +1,5 @@
 // Configuration
-const API_BASE_URL = 'https://analytics-dashboard-backend-eccy.onrender.com/api'; // Change this to your backend URL
+const API_BASE_URL = 'https://analytics-dashboard-backend-eccy.onrender.com'; // Change this to your backend URL
 
 // Global variables to store chart instances
 let charts = {};
