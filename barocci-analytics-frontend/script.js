@@ -1,5 +1,5 @@
 // Configuration
-const API_BASE_URL = 'http://localhost:3000/api'; // Change this to your backend URL
+const API_BASE_URL = 'https://analytics-dashboard-backend-eccy.onrender.com'; // Change this to your backend URL
 
 // Global variables to store chart instances
 let charts = {};
@@ -33,7 +33,7 @@ async function fetchAnalyticsData() {
     
     showStatus('Fetching latest data from Google Analytics...', 'success');
     
-    const response = await fetch(`${API_BASE_URL}/analytics-data`);
+    const response = await fetch(`${API_BASE_URL}/api/analytics-data`);
     
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);

@@ -33,7 +33,7 @@ async function fetchAnalyticsData() {
     
     showStatus('Fetching latest data from Google Analytics...', 'success');
     
-    const response = await fetch(`${API_BASE_URL}/analytics-data`);
+    const response = await fetch(`${API_BASE_URL}/api/analytics-data`);
     
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
