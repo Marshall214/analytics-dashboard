@@ -6,21 +6,38 @@ require('dotenv').config();
 
 const app = express();
 
+// Environment variable validation
+const requiredEnvVars = ['GOOGLE_CLIENT_EMAIL', 'GOOGLE_PRIVATE_KEY', 'GA_PROPERTY_ID'];
+const missingEnvVars = requiredEnvVars.filter(varName => !process.env[varName]);
+
+if (missingEnvVars.length > 0) {
+  console.error('❌ Missing required environment variables:', missingEnvVars);
+  console.error('Please set these environment variables in your Render dashboard');
+  process.exit(1);
+}
+
 // Middleware
 app.use(cors({
-  origin: 'https://leafy-cobbler-d7fef1.netlify.app/' // Replace with your Netlify URL
+  origin: ['https://leafy-cobbler-d7fef1.netlify.app', 'https://leafy-cobbler-d7fef1.netlify.app/'] // Allow both with and without trailing slash
 }));
 app.use(express.json());
 
 // Initialize Google Analytics client
-const analyticsDataClient = new BetaAnalyticsDataClient({
-  credentials: {
-    client_email: process.env.GOOGLE_CLIENT_EMAIL,
-    private_key: process.env.GOOGLE_PRIVATE_KEY.replace(/\\n/g, '\n'),
-  },
-});
+let analyticsDataClient;
+try {
+  analyticsDataClient = new BetaAnalyticsDataClient({
+    credentials: {
+      client_email: process.env.GOOGLE_CLIENT_EMAIL,
+      private_key: process.env.GOOGLE_PRIVATE_KEY.replace(/\\n/g, '\n'),
+    },
+  });
+  console.log('✅ Google Analytics client initialized successfully');
+} catch (error) {
+  console.error('❌ Failed to initialize Google Analytics client:', error.message);
+  process.exit(1);
+}
 
-const GA_PROPERTY_ID = process.env.GA_PROPERTY_ID || 'YOUR_GA_PROPERTY_ID_HERE';
+const GA_PROPERTY_ID = process.env.GA_PROPERTY_ID;
 
 // Helper function to run GA4 reports
 async function runReport(dimensions, metrics, dateRanges = [{ startDate: '30daysAgo', endDate: 'today' }]) {
@@ -114,7 +131,15 @@ app.get('/api/analytics-data', async (req, res) => {
 });
 
 app.get('/api/health', (req, res) => {
-  res.json({ status: 'OK', timestamp: new Date().toISOString() });
+  res.json({ 
+    status: 'OK', 
+    timestamp: new Date().toISOString(),
+    environment: {
+      hasGoogleClientEmail: !!process.env.GOOGLE_CLIENT_EMAIL,
+      hasGooglePrivateKey: !!process.env.GOOGLE_PRIVATE_KEY,
+      hasGAPropertyId: !!process.env.GA_PROPERTY_ID
+    }
+  });
 });
 
 app.get('/api/test-data', (req, res) => {
@@ -154,6 +179,13 @@ app.get('/api/test-data', (req, res) => {
 // Optional: Root route
 app.get('/', (req, res) => {
   res.send('📡 Barocci Analytics API is up and running.');
+});
+
+// Start server
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`🚀 Server running on port ${PORT}`);
+  console.log(`📊 Environment: ${process.env.NODE_ENV || 'development'}`);
 });
 
 // Export for Render serverless
