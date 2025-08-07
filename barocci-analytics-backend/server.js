@@ -5,20 +5,19 @@ const { BetaAnalyticsDataClient } = require('@google-analytics/data');
 require('dotenv').config();
 
 const app = express();
-const PORT = process.env.PORT || 3000;
 
 // Middleware
-app.use(cors());
+app.use(cors({
+  origin: 'https://leafy-cobbler-d7fef1.netlify.app/' // Replace with your Netlify URL
+}));
 app.use(express.json());
 
 // Initialize Google Analytics client
 const analyticsDataClient = new BetaAnalyticsDataClient({
-  keyFilename: process.env.GOOGLE_APPLICATION_CREDENTIALS,
-  // Alternatively, switch to inline env var credentials for more secure Render deployment:
-  // credentials: {
-  //   client_email: process.env.GOOGLE_CLIENT_EMAIL,
-  //   private_key: process.env.GOOGLE_PRIVATE_KEY.replace(/\\n/g, '\n'),
-  // },
+  credentials: {
+    client_email: process.env.GOOGLE_CLIENT_EMAIL,
+    private_key: process.env.GOOGLE_PRIVATE_KEY.replace(/\\n/g, '\n'),
+  },
 });
 
 const GA_PROPERTY_ID = process.env.GA_PROPERTY_ID || 'YOUR_GA_PROPERTY_ID_HERE';
@@ -157,8 +156,5 @@ app.get('/', (req, res) => {
   res.send('📡 Barocci Analytics API is up and running.');
 });
 
-app.listen(PORT, () => {
-  console.log(`🚀 Server running at http://localhost:${PORT}`);
-  console.log(`🌍 GA Property ID: ${GA_PROPERTY_ID}`);
-  console.log(`🔐 Using credentials from: ${process.env.GOOGLE_APPLICATION_CREDENTIALS}`);
-});
+// Export for Render serverless
+module.exports = app;
