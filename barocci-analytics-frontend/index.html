@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Barocci Analytics Dashboard</title>
+
+  <!-- Google Font -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <!-- External CSS -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <div class="header-left">
+      <img src="logo/barocci logo.png" alt="Barocci Logo">
+      <h1>Barocci Analytics Dashboard</h1>
+    </div>
+    <button class="refresh-btn" id="refreshBtn">
+      <span id="refreshIcon">🔄</span>
+      Refresh Data
+    </button>
+  </header>
+
+  <div class="status" id="status"></div>
+
+  <div class="cards">
+    <div class="card">
+      <h2>Total Users</h2>
+      <p id="totalUsers">–</p>
+    </div>
+    <div class="card">
+      <h2>Total Sessions</h2>
+      <p id="totalSessions">–</p>
+    </div>
+    <div class="card">
+      <h2>Avg Bounce Rate</h2>
+      <p id="avgBounce">–</p>
+    </div>
+    <div class="card">
+      <h2>Top City (Users)</h2>
+      <p id="topCity">–</p>
+    </div>
+  </div>
+
+  <div class="dashboard">
+    <div class="chart-card">
+      <h3>Users & Sessions by City</h3>
+      <canvas id="usersSessionsChart"></canvas>
+    </div>
+    <div class="chart-card">
+      <h3>Bounce Rate by City</h3>
+      <canvas id="bounceChart"></canvas>
+    </div>
+    <div class="chart-card">
+      <h3>Views by City</h3>
+      <canvas id="viewsChart"></canvas>
+    </div>
+    <div class="chart-card">
+      <h3>Traffic Sources</h3>
+      <canvas id="trafficSourceChart"></canvas>
+    </div>
+    <div class="chart-card">
+      <h3>Traffic by Platform</h3>
+      <canvas id="trafficPlatformChart"></canvas>
+    </div>
+    <div class="chart-card">
+      <h3>Views by Location</h3>
+      <canvas id="viewsLocationChart"></canvas>
+    </div>
+  </div>
+
+  <div class="last-updated" id="lastUpdated"></div>
+
+  <!-- External JavaScript -->
+  <script src="script.js"></script>
+</body>
+</html>
